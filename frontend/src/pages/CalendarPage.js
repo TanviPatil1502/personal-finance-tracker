@@ -1,109 +1,93 @@
 import React, { useState, useEffect, useCallback } from "react";
 import Sidebar from "../components/Sidebar";
-import "./Dashboard.css";
-import { FaBars, FaChevronLeft, FaChevronRight } from "react-icons/fa";
 import { getTransactions } from "../api";
+import "./Calendar.css";
+import { FaBars, FaChevronLeft, FaChevronRight } from "react-icons/fa";
 
 export default function CalendarPage({ onLogout, onNavigate }) {
   const [sidebarOpen, setSidebarOpen] = useState(window.innerWidth > 900);
   const [calendarData, setCalendarData] = useState([]);
-  const [incomeSum, setIncomeSum] = useState(0);
-  const [expenseSum, setExpenseSum] = useState(0);
 
-  // Current month/year
-  const [currentDate, setCurrentDate] = useState(new Date());
+  const [month, setMonth] = useState(new Date().getMonth());
+  const [year, setYear] = useState(new Date().getFullYear());
 
-  // ----------------------------
-  // GENERATE CALENDAR (Memoized)
-  // ----------------------------
-  const generateCalendar = useCallback(
-    (data) => {
-      const year = currentDate.getFullYear();
-      const month = currentDate.getMonth();
-
-      const firstDay = new Date(year, month, 1).getDay(); 
-      const daysInMonth = new Date(year, month + 1, 0).getDate();
-
-      let calendar = [];
-      let totalIncome = 0;
-      let totalExpense = 0;
-
-      // Blank cells until month starts
-      for (let i = 0; i < firstDay; i++) {
-        calendar.push({ empty: true });
-      }
-
-      // Days with data
-      for (let day = 1; day <= daysInMonth; day++) {
-        const dateKey = `${year}-${String(month + 1).padStart(2, "0")}-${String(
-          day
-        ).padStart(2, "0")}`;
-
-        const dayTx = data.filter((tx) => tx.date?.slice(0, 10) === dateKey);
-
-        const income = dayTx
-          .filter((t) => t.type === "income")
-          .reduce((sum, t) => sum + t.amount, 0);
-
-        const expense = dayTx
-          .filter((t) => t.type === "expense")
-          .reduce((sum, t) => sum + t.amount, 0);
-
-        totalIncome += income;
-        totalExpense += expense;
-
-        calendar.push({
-          day,
-          income,
-          expense,
-          today:
-            day === new Date().getDate() &&
-            month === new Date().getMonth() &&
-            year === new Date().getFullYear(),
-        });
-      }
-
-      setIncomeSum(totalIncome);
-      setExpenseSum(totalExpense);
-      setCalendarData(calendar);
-    },
-    [currentDate]
-  );
-
-  // ----------------------------
-  // LOAD TRANSACTIONS
-  // ----------------------------
+  // MAIN DATA LOADER
   const loadData = useCallback(async () => {
     try {
       const token = localStorage.getItem("token");
       const data = await getTransactions(token);
-      generateCalendar(data);
-    } catch (error) {
-      console.error("Calendar loading error:", error);
-    }
-  }, [generateCalendar]);
 
+      // ==== GENERATE CALENDAR GRID ====
+      const daysInMonth = new Date(year, month + 1, 0).getDate();
+      const firstDay = new Date(year, month, 1).getDay();
+
+      let grid = [];
+
+      // Blank cells before the month starts
+      for (let i = 0; i < firstDay; i++) {
+        grid.push({ blank: true });
+      }
+
+      // Actual cells
+      for (let day = 1; day <= daysInMonth; day++) {
+        const dateKey = `${year}-${String(month + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+
+        const dayTx = data.filter((tx) => tx.date?.slice(0, 10) === dateKey);
+
+        const income = dayTx
+          .filter((tx) => tx.type === "income")
+          .reduce((sum, tx) => sum + tx.amount, 0);
+
+        const expense = dayTx
+          .filter((tx) => tx.type === "expense")
+          .reduce((sum, tx) => sum + tx.amount, 0);
+
+        grid.push({ day, income, expense });
+      }
+
+      setCalendarData(grid);
+    } catch (err) {
+      console.error(err);
+    }
+  }, [month, year]);
+
+  // LOAD WHENEVER MONTH OR YEAR CHANGES
   useEffect(() => {
     loadData();
+
+    const handleResize = () => {
+      setSidebarOpen(window.innerWidth > 900);
+    };
+
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
   }, [loadData]);
 
-  // ----------------------------
   // MONTH NAVIGATION
-  // ----------------------------
-  const prevMonth = () => {
-    const d = new Date(currentDate);
-    d.setMonth(d.getMonth() - 1);
-    setCurrentDate(d);
+  const nextMonth = () => {
+    if (month === 11) {
+      setMonth(0);
+      setYear(year + 1);
+    } else {
+      setMonth(month + 1);
+    }
   };
 
-  const nextMonth = () => {
-    const d = new Date(currentDate);
-    d.setMonth(d.getMonth() + 1);
-    setCurrentDate(d);
+  const prevMonth = () => {
+    if (month === 0) {
+      setMonth(11);
+      setYear(year - 1);
+    } else {
+      setMonth(month - 1);
+    }
   };
+
+  const monthName = new Date(year, month).toLocaleString("default", { month: "long" });
 
   return (
     <div className="dashboard-root">
+
+      {/* SIDEBAR */}
       <Sidebar
         isOpen={sidebarOpen}
         onClose={() => setSidebarOpen(false)}
@@ -112,8 +96,8 @@ export default function CalendarPage({ onLogout, onNavigate }) {
       />
 
       <div className={`dashboard-main ${sidebarOpen ? "with-sidebar" : ""}`}>
-        
-        {/* Header */}
+
+        {/* HEADER */}
         <div className="dashboard-top">
           <button className="hamburger" onClick={() => setSidebarOpen(!sidebarOpen)}>
             <FaBars />
@@ -121,61 +105,48 @@ export default function CalendarPage({ onLogout, onNavigate }) {
           <h1 className="page-title">Calendar</h1>
         </div>
 
+        {/* BACK BUTTON */}
         <button className="back-btn" onClick={() => onNavigate("dashboard")}>
           ← Back
         </button>
 
-        {/* MONTH NAVIGATION */}
-        <div className="month-nav">
-          <FaChevronLeft className="month-btn" onClick={prevMonth} />
-
-          <h2 className="month-title">
-            {currentDate.toLocaleString("default", { month: "long" })}{" "}
-            {currentDate.getFullYear()}
-          </h2>
-
-          <FaChevronRight className="month-btn" onClick={nextMonth} />
-        </div>
-
-        {/* SUMMARY BAR */}
-        <div className="month-summary">
-          <div>
-            Income: <span className="cal-income">₹{incomeSum}</span>
-          </div>
-          <div>
-            Expenses: <span className="cal-expense">₹{expenseSum}</span>
-          </div>
-          <div>
-            Total: <span className="cal-total">₹{incomeSum - expenseSum}</span>
-          </div>
+        {/* MONTH HEADER */}
+        <div className="calendar-header">
+          <FaChevronLeft className="calendar-arrow" onClick={prevMonth} />
+          <span>{monthName} {year}</span>
+          <FaChevronRight className="calendar-arrow" onClick={nextMonth} />
         </div>
 
         {/* WEEKDAYS */}
         <div className="calendar-weekdays">
-          {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((d) => (
-            <div key={d}>{d}</div>
-          ))}
+          <div>Sun</div>
+          <div>Mon</div>
+          <div>Tue</div>
+          <div>Wed</div>
+          <div>Thu</div>
+          <div>Fri</div>
+          <div>Sat</div>
         </div>
 
-        {/* CALENDAR GRID */}
+        {/* GRID */}
         <div className="calendar-grid-advanced">
-          {calendarData.map((item, i) =>
-            item.empty ? (
-              <div className="calendar-cell empty" key={i}></div>
+          {calendarData.map((day, index) =>
+            day.blank ? (
+              <div key={index} className="calendar-cell empty"></div>
             ) : (
               <div
-                className={`calendar-cell ${item.today ? "today" : ""}`}
-                key={i}
+                key={index}
+                className={`calendar-cell ${
+                  day.day === new Date().getDate() &&
+                  month === new Date().getMonth() &&
+                  year === new Date().getFullYear()
+                    ? "today"
+                    : ""
+                }`}
               >
-                <div className="cal-day">{item.day}</div>
-
-                {item.income > 0 && (
-                  <div className="cal-income">₹{item.income}</div>
-                )}
-
-                {item.expense > 0 && (
-                  <div className="cal-expense">₹{item.expense}</div>
-                )}
+                <div className="cal-day">{day.day}</div>
+                <div className="cal-income">Income: ₹{day.income}</div>
+                <div className="cal-expense">Expense: ₹{day.expense}</div>
               </div>
             )
           )}
