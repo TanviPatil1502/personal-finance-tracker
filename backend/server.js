@@ -8,11 +8,14 @@ connectDB();
 
 const app = express();
 
+// Middleware
 app.use(cors());
 app.use(express.json());
 
+// Routes
 app.use("/api/auth", require("./routes/authRoutes"));
 app.use("/api/transactions", require("./routes/transactionRoutes"));
+app.use("/api/reminders", require("./routes/reminderRoutes"));   // ⭐ ADD THIS
 
 app.get("/", (req, res) => {
   res.send("API is running...");
