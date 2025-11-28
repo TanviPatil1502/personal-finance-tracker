@@ -1,7 +1,7 @@
 import React, { useState } from "react";
-import API from "../api";
+import { addTransaction } from "../api";
 
-function TransactionForm({ onSuccess }) {
+function TransactionForm({ onAdd }) {
   const [amount, setAmount] = useState("");
   const [type, setType] = useState("income");
   const [category, setCategory] = useState("");
@@ -10,55 +10,57 @@ function TransactionForm({ onSuccess }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    try {
-      await API.post("/transactions/add", {
-        amount,
-        type,
-        category,
-        date,
-        note,
-      });
 
-      alert("Transaction added!");
-      onSuccess(); // reload data
-    } catch (error) {
-      alert("Failed to add transaction");
-    }
+    const token = localStorage.getItem("token");
+
+    await addTransaction(
+      { amount: Number(amount), type, category, date, note },
+      token
+    );
+
+    if (onAdd) onAdd();  // ✔ FIXED — will not crash now
+
+    setAmount("");
+    setCategory("");
+    setDate("");
+    setNote("");
   };
 
   return (
-    <form onSubmit={handleSubmit} style={{ marginBottom: "20px" }}>
+    <form onSubmit={handleSubmit}>
+      <h3>Add Transaction</h3>
 
       <input
         type="number"
         placeholder="Amount"
+        value={amount}
         onChange={(e) => setAmount(e.target.value)}
-        required
-      /><br /><br />
+      /><br />
 
-      <select onChange={(e) => setType(e.target.value)}>
+      <select value={type} onChange={(e) => setType(e.target.value)}>
         <option value="income">Income</option>
         <option value="expense">Expense</option>
-      </select><br /><br />
+      </select><br />
 
       <input
         type="text"
         placeholder="Category"
+        value={category}
         onChange={(e) => setCategory(e.target.value)}
-        required
-      /><br /><br />
+      /><br />
 
       <input
         type="date"
+        value={date}
         onChange={(e) => setDate(e.target.value)}
-        required
-      /><br /><br />
+      /><br />
 
       <input
         type="text"
         placeholder="Note"
+        value={note}
         onChange={(e) => setNote(e.target.value)}
-      /><br /><br />
+      /><br />
 
       <button type="submit">Add Transaction</button>
     </form>
