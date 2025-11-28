@@ -16,6 +16,7 @@
 
 .splash-card{
   width:360px;
+  height:560px;
   background:var(--card);
   padding:36px 28px;
   border-radius:16px;
@@ -24,8 +25,8 @@
 }
 
 .logo-circle{
-  width:84px;
-  height:84px;
+  width:150px;
+  height:150px;
   margin:0 auto 14px;
   border-radius:20px;
   display:flex;
@@ -39,13 +40,13 @@
 
 .splash-title{
   margin:0;
-  font-size:22px;
+  font-size:40px;
   color:#0f172a;
 }
 
 .splash-sub{
   color:var(--muted);
-  font-size:14px;
+  font-size:30px;
   margin-top:8px;
   margin-bottom:22px;
 }
@@ -63,3 +64,73 @@
 }
 
 .splash-cta:hover{ transform:translateY(-2px); }
+.splash-root {
+  height: 75px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: #e8eeff;
+}
+
+.splash-card {
+  width: 35%; /* ⭐ bigger size */
+  min-width: 420px;
+  padding: 50px;
+  border-radius: 20px;
+  background: white;
+  box-shadow: 0 12px 35px rgba(0,0,0,0.12);
+  text-align: center;
+}
+
+.splash-title {
+  font-size: 60px;
+  font-weight: 800;
+  margin-bottom: 30px;
+  color: #1e293b;
+}
+
+.splash-btn {
+  height: 75px;
+  width: 150px;
+  font-size: 40px;
+  padding: 16px 20px;
+  width: 50%;
+  border: none;
+  border-radius: 12px;
+  background: #1a73e8;
+  color: white;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.splash-btn:hover {
+  background: #0f5bd7;
+}
+.splash-btn {
+  width: 60%;            /* ⭐ Make button shorter, centered */
+  min-width: 280px;      /* Prevent too small on mobile */
+  padding: 18px 24px;    /* ⭐ Bigger height */
+  
+  background: #1a73e8;
+  color: white;
+  border: none;
+  border-radius: 12px;   /* ⭐ Rounder edges */
+  
+  font-size: 20px;       /* ⭐ Bigger text */
+  font-weight: 700;
+  
+  text-align: center;
+  cursor: pointer;
+  margin-top: 25px;
+
+  display: block;        /* Center the button */
+  margin-left: auto;
+  margin-right: auto;
+
+  transition: 0.2s ease-in-out;
+}
+
+.splash-btn:hover {
+  background: #125dcc;
+  transform: translateY(-2px);  /* subtle lift effect */
+}
