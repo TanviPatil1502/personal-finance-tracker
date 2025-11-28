@@ -1,0 +1,92 @@
+/* REMINDER CARD */
+.reminder-card {
+  background: white;
+  padding: 20px;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  width: 100%;
+}
+
+.reminder-form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.reminder-form input {
+  padding: 10px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  outline: none;
+  font-size: 14px;
+}
+
+.reminder-btn {
+  margin-top: 10px;
+  padding: 12px;
+  background: #1A73E8;
+  color: white;
+  border: none;
+  border-radius: 10px;
+  font-size: 16px;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.reminder-btn:hover {
+  background: #155dc0;
+}
+
+/* Reminder list */
+.reminders-box {
+  margin-top: 20px;
+}
+
+.reminder-item {
+  padding: 12px;
+  background: #f8fafc;
+  border-left: 4px solid #1A73E8;
+  margin-bottom: 10px;
+  border-radius: 8px;
+}
+/* Make both forms look identical */
+.reminder-form label {
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 5px;
+}
+
+.reminder-form input,
+.reminder-form select {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  margin-bottom: 12px;
+  font-size: 14px;
+}
+
+/* Submit button unified */
+.reminder-btn {
+  width: 100%;
+  padding: 12px;
+  background: #1A73E8;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 16px;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.reminder-btn:hover {
+  background: #0f59c9;
+}
+
+/* Title in both cards */
+.add-title {
+  font-size: 20px;
+  font-weight: 700;
+  margin-bottom: 15px;
+  color: #1e293b;
+}
