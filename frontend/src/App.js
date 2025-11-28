@@ -1,67 +1,124 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { loginUser, registerUser } from "./api";
 
+// Pages
 import SplashScreen from "./pages/SplashScreen";
 import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
 import Dashboard from "./pages/Dashboard";
-import Reports from "./pages/Reports";
+import ReportsPage from "./pages/ReportsPage";
 import CalendarPage from "./pages/CalendarPage";
 import CalculatorPage from "./pages/CalculatorPage";
 
 function App() {
   const [token, setToken] = useState(localStorage.getItem("token") || "");
-  const [view, setView] = useState("splash");  
+  const [view, setView] = useState(token ? "pages" : "splash");
   const [currentPage, setCurrentPage] = useState("dashboard");
 
-  useEffect(() => {
-    if (token) {
-      setView("pages");
-      setCurrentPage("dashboard");
-    }
-  }, [token]);
-
+  /* -------------------------
+      LOGIN
+  -------------------------- */
   const handleLogin = async ({ email, password }) => {
-    const data = await loginUser({ email, password });
-    if (data?.token) {
-      localStorage.setItem("token", data.token);
-      setToken(data.token);
-      setView("pages");
-    } else {
-      alert("Login Failed");
+    try {
+      const res = await loginUser({ email, password });
+
+      if (res?.token) {
+        localStorage.setItem("token", res.token);
+        setToken(res.token);
+        setView("pages");
+        setCurrentPage("dashboard");
+      } else {
+        alert(res?.message || "Login failed.");
+      }
+    } catch (err) {
+      alert("Login error");
     }
   };
 
+  /* -------------------------
+      REGISTER
+  -------------------------- */
   const handleRegister = async ({ email, password }) => {
-    const data = await registerUser({ email, password });
-    if (data?.message) {
-      alert(data.message);
-      setView("login");
-    } else {
-      alert("Registration failed");
+    try {
+      const res = await registerUser({ email, password });
+
+      if (res?.message) {
+        alert(res.message);
+        setView("login");
+      } else if (res?.token) {
+        localStorage.setItem("token", res.token);
+        setToken(res.token);
+        setView("pages");
+        setCurrentPage("dashboard");
+      } else {
+        alert("Registration failed.");
+      }
+    } catch (err) {
+      alert("Registration error");
     }
   };
 
+  /* -------------------------
+      LOGOUT
+  -------------------------- */
   const handleLogout = () => {
     localStorage.removeItem("token");
     setToken("");
     setView("login");
+    setCurrentPage("dashboard");
   };
 
-  // SHOW SPLASH + AUTH SCREENS
+  /* -------------------------
+      NOT LOGGED IN
+  -------------------------- */
+
   if (!token) {
-    if (view === "splash") return <SplashScreen appName="MoneyMate" onContinue={() => setView("login")} />;
-    if (view === "login") return <LoginPage onLogin={handleLogin} onSwitchToRegister={() => setView("register")} />;
-    if (view === "register") return <RegisterPage onRegister={handleRegister} onSwitchToLogin={() => setView("login")} />;
+    if (view === "splash") {
+      return <SplashScreen onContinue={() => setView("login")} />;
+    }
+
+    if (view === "login") {
+      return (
+        <LoginPage
+          onLogin={handleLogin}
+          onSwitchToRegister={() => setView("register")}
+        />
+      );
+    }
+
+    if (view === "register") {
+      return (
+        <RegisterPage
+          onRegister={handleRegister}
+          onSwitchToLogin={() => setView("login")}
+        />
+      );
+    }
+
+    return null;
   }
 
-  // SHOW MAIN PAGES AFTER LOGIN
+  /* -------------------------
+      LOGGED IN PAGES
+  -------------------------- */
+
   return (
     <>
-      {currentPage === "dashboard"   && <Dashboard onLogout={handleLogout} onNavigate={setCurrentPage} />}
-      {currentPage === "reports"     && <Reports onLogout={handleLogout} onNavigate={setCurrentPage} />}
-      {currentPage === "calendar"    && <CalendarPage onLogout={handleLogout} onNavigate={setCurrentPage} />}
-      {currentPage === "calculator"  && <CalculatorPage onLogout={handleLogout} onNavigate={setCurrentPage} />}
+      {currentPage === "dashboard" && (
+        <Dashboard onLogout={handleLogout} onNavigate={setCurrentPage} />
+      )}
+
+      {currentPage === "reports" && (
+        <ReportsPage onLogout={handleLogout} onNavigate={setCurrentPage} />
+      )}
+
+      {currentPage === "calendar" && (
+        <CalendarPage onLogout={handleLogout} onNavigate={setCurrentPage} />
+      )}
+
+      {currentPage === "calculator" && (
+        <CalculatorPage onLogout={handleLogout} onNavigate={setCurrentPage} />
+      )}
     </>
   );
 }
