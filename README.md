@@ -16,9 +16,8 @@ A full-stack MERN application to track daily expenses, manage budgets, and visua
        Frontend: React.js
                  Axios
                  Context API / useState / useEffect
-                 CSS / Tailwind (if you used it)
+                 CSS
        Backend: Node.js
                 Express.js
                 JWT Authentication
-                bcrypt.js
                 MongoDB + Mongoose
